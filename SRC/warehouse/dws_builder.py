@@ -1,26 +1,31 @@
 import pandas as pd
-import os
+from warehouse.base_builder import BaseBuilder
 from utils.reader import read_csv_with_schema
-from config.schema import ORDER_SCHEMA
+from config.dwd_schema import (
+    DWD_ORDER_DETAIL_SCHEMA
+)
+from utils.logger import logger
 
 
-class DWSbuilder:
-
+class DWSbuilder(BaseBuilder):
 
     def build_user_sales(
             self,
             dwd_file,
             output_file
     ):
-
-
-        df = read_csv_with_schema(
+        logger.info(
+            "开始构建用户销售主题"
+        )
+        df = self.read(
             dwd_file,
-            ORDER_SCHEMA
+            DWD_ORDER_DETAIL_SCHEMA
         )
 
-
-        print(df.columns)
+        df["order_time"] = pd.to_datetime(
+            df["order_time"],
+            errors="coerce"
+        )
 
 
         # =====================
@@ -33,91 +38,69 @@ class DWSbuilder:
                 'customer_name'
             ]
         ).agg(
-
             order_count=(
                 'order_id',
                 'count'
             ),
-
             total_amount=(
                 'payable_amount',
                 'sum'
             ),
-
             first_order_time=(
                 'order_time',
                 'min'
             ),
-
             last_order_time=(
                 'order_time',
                 'max'
             )
-
         ).reset_index()
-
-
 
         user_sales['avg_amount'] = (
             user_sales['total_amount']
             /
             user_sales['order_count']
         ).round(2)
-
-
-
-        os.makedirs(
-            os.path.dirname(output_file),
-            exist_ok=True
+        self.save(
+            user_sales,
+            output_file
+        )
+        logger.info(
+            "用户销售主题完成"
         )
 
+        return user_sales
 
-        user_sales.to_csv(
-            output_file,
-            index=False,
-            encoding='utf-8-sig'
+    def build_product_sales(
+            self,
+            dwd_file,
+            output_file
+    ):
+        df = self.read(
+            dwd_file,
+            DWD_ORDER_DETAIL_SCHEMA
         )
-
-
-        # =====================
-        # 商品销售主题
-        # =====================
-
-
-        product_sales=df.groupby(
+        product_sales = df.groupby(
             [
-                'product_id',
-                'product_name',
-                'category_name'
+                "product_id",
+                "product_name",
+                "category_name"
             ]
         ).agg(
-
             sales_count=(
-                'quantity',
-                'sum'
+                "quantity",
+                "sum"
             ),
-
             sales_amount=(
-                'actual_amount',
-                'sum'
+                "actual_amount",
+                "sum"
             )
-
         ).reset_index()
-
-
-
-        product_output=os.path.join(
-            os.path.dirname(output_file),
-            "dws_product_sales.csv"
+        self.save(
+            product_sales,
+            output_file
         )
-
-
-        product_sales.to_csv(
-            product_output,
-            index=False,
-            encoding='utf-8-sig'
+        logger.info(
+            "商品销售主题完成"
         )
-
-
-
-        print("DWS层构建完成")
+        return product_sales

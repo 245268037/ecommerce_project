@@ -1,25 +1,41 @@
-import pandas as pd
-import os
+from warehouse.base_builder import BaseBuilder
+from config.settings import SOURCE_SYSTEM
 from datetime import datetime
-from utils.reader import read_csv_with_schema
-from config.schema import ORDER_SCHEMA
+from utils.logger import logger
 
-class ODSBuilder:
+class ODSBuilder(BaseBuilder):
+    def build_ods(
+            self,
+            input_file,
+            output_file,
+            schema
+    ):
+        logger.info(
+            f"开始构建ODS:{input_file}"
+        )
+         # =====================
+        # 1.读取数据
+        # =====================
 
-    def build_ods(self,input_path,output_path):
-        df = read_csv_with_schema(input_path,ORDER_SCHEMA
+        df = self.read(
+            input_file,
+            schema
         )
-        #抽取时间
-        df['etl_time'] = datetime.now()
-        #数据来源字段
-        df['source_system'] = 'ECommerce'
-        #增加批次号
-        batch = datetime.now().strftime('%Y%m%d%H%M')
-        df['etl_batch'] = batch
-        os.makedirs(
-            os.path.dirname(output_path),
-            exist_ok = True,
+
+        # 2.增加ETL字段
+        etl_time = datetime.now()
+        df["etl_time"] = etl_time
+        df["source_system"] = SOURCE_SYSTEM
+        df["etl_batch"] = (
+            etl_time.strftime(
+                "%Y%m%d%H%M%S"
+            )
         )
-       #自动创建目录
-        df.to_csv(output_path,index=False,encoding='utf-8-sig')
+
+        # 3.保存ODS
+        self.save(
+            df,
+            output_file
+        )
+        logger.info(f'ODS构建完成: {output_file}')
         return df

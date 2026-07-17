@@ -1,17 +1,29 @@
 import pandas as pd
 
+from config.settings import CSV_ENCODING
+
+
 def read_csv_with_schema(
-        path,
+        file_path,
         schema=None
 ):
 
-    if schema:
+    """
+    统一读取CSV文件
 
-        return pd.read_csv(
-            path,
-            dtype=schema
-        )
+    file_path:
+        文件路径
 
-    else:
+    schema:
+        字段类型配置
 
-        return pd.read_csv(path)
+    """
+
+    df = pd.read_csv(
+        file_path,
+        dtype=schema,
+        encoding=CSV_ENCODING,
+        low_memory=False
+    )
+
+    return df

@@ -1,19 +1,20 @@
 import pandas as pd
 import os
-from utils.reader import read_csv_with_schema
-from config.schema import ORDER_SCHEMA
+from warehouse.base_builder import BaseBuilder
+from config.dwd_schema import DWD_ORDER_DETAIL_SCHEMA
+from utils.logger import logger
 
 
 
-class ADSBuilder():
+class ADSBuilder(BaseBuilder):
 
     def build_sales_summary(self,dwd_file,output):
-        df = read_csv_with_schema(dwd_file,ORDER_SCHEMA)
-
+        logger.info('开始生成销售指标')
+        df = self.read(dwd_file, DWD_ORDER_DETAIL_SCHEMA)
         #时间字符串转换
         df['order_time'] = pd.to_datetime(df['order_time'],errors='coerce')
         #按日期统计
-        df['order_date'] = (df['order_time'].dt.date)
+        df['order_date'] = (df['order_time'].dt.strftime('%Y-%m-%d'))
 
 
         sales = df.groupby('order_date').agg(
@@ -25,12 +26,11 @@ class ADSBuilder():
         #平均订单金额
         sales['avg_order_amount'] = (sales['sales_amount'] / sales['order_count']).round(2)
 
-        os.makedirs(os.path.dirname(output), exist_ok=True)
-        sales.to_csv(
-            output,
-            index = False
+        self.save(sales,output)
+        logger.info(
+            f"销售指标完成:{output}"
         )
-
+        return sales
 
 
 
@@ -39,7 +39,8 @@ class ADSBuilder():
             dwd_file,
             output
     ):
-        df = read_csv_with_schema(dwd_file,ORDER_SCHEMA)
+        df = self.read(dwd_file,DWD_ORDER_DETAIL_SCHEMA)
+        logger.info('开始生成用户指标')
         # 用户运营指标
         user = df.groupby(['customer_id', 'customer_name']).agg(
             order_count=('order_id', 'count'),
@@ -57,13 +58,9 @@ class ADSBuilder():
                 return '普通用户'
 
         user['user_level'] = (user['total_amount'].apply(level))
-        os.makedirs(os.path.dirname(output), exist_ok=True)
-        user.to_csv(
-            output,
-            index=False
-        )
-
-
+        self.save(user,output)
+        logger.info(f'用户指标保存完成:{output}')
+        return user
 
 
     def build_product_summary(
@@ -71,7 +68,8 @@ class ADSBuilder():
             dwd_file,
             output
     ):
-        df = read_csv_with_schema(dwd_file,ORDER_SCHEMA)
+        df = self.read(dwd_file,DWD_ORDER_DETAIL_SCHEMA)
+        logger.info('开始生成商品指标')
         # 商品运营指标
         product = (df.groupby(['product_id', 'product_name', 'category_name'])).agg(
             sales_count=('quantity', 'sum'),
@@ -79,12 +77,8 @@ class ADSBuilder():
         ).reset_index()
 
         product['rank'] = product['sales_count'].rank(ascending=False)
-        os.makedirs(os.path.dirname(output), exist_ok=True)
-
-        product.to_csv(
-            output,
-            index = False
-        )
+        self.save(product,output)
+        logger.info(f'商品指标保存完成:{output}')
 
 
 

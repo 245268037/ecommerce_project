@@ -1,0 +1,7 @@
+from abc import ABC,abstractmethod
+
+class BaseRule(ABC):
+
+    @abstractmethod
+    def check(self):
+        pass
