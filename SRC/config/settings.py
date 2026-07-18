@@ -20,11 +20,8 @@ LOG_FILE = "etl.log"
 # ==========================
 
 CSV_ENCODING = "utf-8-sig"
-
 CSV_INDEX = False
-
 CSV_LOW_MEMORY = False
-
 
 # ==========================
 # Excel配置
@@ -32,24 +29,24 @@ CSV_LOW_MEMORY = False
 
 EXCEL_ENGINE = "openpyxl"
 
-
 # ==========================
 # 时间配置
 # ==========================
 
 TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
-
 DATE_FORMAT = "%Y-%m-%d"
-
 
 # ==========================
 # ETL配置
 # ==========================
 
 SOURCE_SYSTEM = "ECommerce"
-
+FILE_ENCODING = "utf-8-sig"
 ETL_BATCH_SIZE = 10000
-
+# 环境
+ENV = "dev"
+# 是否开启日志
+ENABLE_LOG = True
 
 # ==========================
 # 默认dtype

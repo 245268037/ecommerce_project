@@ -1,17 +1,14 @@
 import os
 import pandas as pd
-
+from datetime import datetime
+from utils.job_logger import JobLogger
 from config.clean_schema import CLEAN_ORDER_SCHEMA
 from cleaner.data_cleaner import DataCleaner
 from exporter.report_export import ReportExport
-
-
 from warehouse.ods_builder import ODSBuilder
 from warehouse.dwd_builder import DWDBuilder
 from warehouse.dws_builder import DWSbuilder
 from warehouse.ads_builder import ADSBuilder
-
-
 from checker.rule_engine import RuleEngine
 from checker.rules.null_rule import NullRule
 from checker.rules.duplicate_rule import DuplicateRule
@@ -28,15 +25,27 @@ from config.raw_schema import ORDER_RAW_SCHEMA
 from utils.file_checker import FileChecker
 from utils.logger import logger
 from utils.reader import read_csv_with_schema
+from checker.rules.count_rule import CountRule
+from checker.rules.type_rule import TypeRule
+from checker.quality_score import QualityScore
+from exporter.score_export import ScoreExport
+from exporter.error_export import ErrorExport
+from utils.history_writer import HistoryWriter
 
 class ETLPipeline:
     def __init__(self):
         self.cleaner = DataCleaner()
         self.reporter = ReportExport()
+        self.score = QualityScore()
+        self.score_export = ScoreExport()
+        self.history_writer = HistoryWriter()
         self.ods = ODSBuilder()
         self.dwd = DWDBuilder()
         self.dws = DWSbuilder()
         self.ads = ADSBuilder()
+        self.job_logger  = JobLogger(path.ETL_JOB_LOG)
+        self.error_export = ErrorExport()
+
 
     def check_file(self):
 
@@ -65,36 +74,44 @@ class ETLPipeline:
         )
 
     def run(self):
+        start = datetime.now()
+
+        status = "SUCCESS"
+
         try:
             logger.info(
                 "ETL任务开始"
             )
 
             self.check_file()
-
             self.clean()
-
             self.quality_check()
-
             self.build_ods()
-
             self.build_dwd()
-
             self.build_dws()
-
             self.build_ads()
-
             logger.info("ETL任务完成")
-
         except  Exception as e:
-            logger.exception(
-                f'ETL任务执行失败{e}'
-            )
+            status = "FAILED"
+            logger.error(e)
             raise
 
-        # =========================
-        # 数据质量
-        # =========================
+
+        finally:
+            end = datetime.now()
+            print(
+                path.ETL_JOB_LOG
+            )
+            self.job_logger.write(
+                "ecommerce_etl",
+                start,
+                end,
+                status
+            )
+
+
+
+
 
     def clean(self):
         logger.info(
@@ -133,8 +150,14 @@ class ETLPipeline:
             CLEAN_ORDER_SCHEMA
         )
         engine = RuleEngine()
+
         engine.register(
             NullRule()
+        )
+        engine.register(
+            TypeRule(
+                CLEAN_ORDER_SCHEMA
+            )
         )
         engine.register(
             DuplicateRule(
@@ -142,19 +165,39 @@ class ETLPipeline:
             )
         )
         engine.register(
+            BusinessRule()
+        )
+        engine.register(
+            CountRule(5000)
+        )
+        engine.register(
             AmountRule()
         )
 
-        engine.register(
-            BusinessRule()
-        )
         result = engine.run(df)
 
+        quality_score = self.score.calculate(
+            result
+        )
+        self.history_writer.write(
+            quality_score,
+            path.QUALITY_HISTORY
+        )
+
+        self.score_export.export(
+            quality_score,
+            path.QUALITY_SCORE
+        )
+
+        self.error_export.export(
+            result,
+            path.ERROR_REPORT
+        )
+
+
         self.reporter.export(
-            result["NullRule"],
-            result["DuplicateRule"],
-            result["BusinessRule"],
-            result["AmountRule"]
+            result,
+            path.QUALITY_REPORT
         )
 
         # =========================

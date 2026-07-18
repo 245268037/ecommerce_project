@@ -1,3 +1,6 @@
+from utils.logger import logger
+
+
 class RuleEngine:
     def __init__(self):
         self.rules = []
@@ -8,5 +11,7 @@ class RuleEngine:
     def run(self,df):
         result = {}
         for rule in self.rules:
-            result[type(rule).__name__] = rule.check(df)
+            name = rule.__class__.__name__
+            logger.info(f'执行规则{name}')
+            result[name] = rule.check(df)
         return result
