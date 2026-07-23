@@ -22,6 +22,10 @@ class ODSBuilder(BaseBuilder):
             schema
         )
 
+        logger.info(
+            f"ODS读取完成，数据量：{len(df)}"
+        )
+
         # 2.增加ETL字段
         etl_time = datetime.now()
         df["etl_time"] = etl_time

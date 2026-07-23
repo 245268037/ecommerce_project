@@ -1,4 +1,3 @@
-from openpyxl.formatting import rule
 
 from checker.severity import Severity
 

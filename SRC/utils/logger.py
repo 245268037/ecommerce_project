@@ -26,6 +26,3 @@ logging.basicConfig(
 )
 
 logger = logging.getLogger(__name__)
-
-
-print(logging.getLogger().handlers)

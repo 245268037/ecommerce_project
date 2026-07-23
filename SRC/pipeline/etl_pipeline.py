@@ -31,6 +31,7 @@ from checker.quality_score import QualityScore
 from exporter.score_export import ScoreExport
 from exporter.error_export import ErrorExport
 from utils.history_writer import HistoryWriter
+from warehouse.bi_builder import BIBuilder
 
 class ETLPipeline:
     def __init__(self):
@@ -45,6 +46,7 @@ class ETLPipeline:
         self.ads = ADSBuilder()
         self.job_logger  = JobLogger(path.ETL_JOB_LOG)
         self.error_export = ErrorExport()
+        self.bi = BIBuilder()
 
 
     def check_file(self):
@@ -90,6 +92,7 @@ class ETLPipeline:
             self.build_dwd()
             self.build_dws()
             self.build_ads()
+            self.build_bi_dataset()
             logger.info("ETL任务完成")
         except  Exception as e:
             status = "FAILED"
@@ -99,9 +102,6 @@ class ETLPipeline:
 
         finally:
             end = datetime.now()
-            print(
-                path.ETL_JOB_LOG
-            )
             self.job_logger.write(
                 "ecommerce_etl",
                 start,
@@ -273,13 +273,63 @@ class ETLPipeline:
         )
 
         self.ads.build_user_summary(
-            path.DWD_ORDER_DETAIL,
+            path.DWS_USER_SALES,
             path.ADS_USER_SUMMARY
 
         )
 
+        self.ads.build_user_rfm_base(
+            path.DWS_USER_SALES,
+            path.ADS_USER_RFM_BASE
+        )
+
+        self.ads.build_user_rfm_segment(
+            path.ADS_USER_RFM_BASE,
+            path.ADS_USER_RFM_SEGMENT,
+            path.ADS_USER_RFM_SEGMENT_SUMMARY
+        )
+
         self.ads.build_product_summary(
-            path.DWD_ORDER_DETAIL,
+            path.DWS_PRODUCT_SALES,
             path.ADS_PRODUCT_SUMMARY
 
         )
+
+    def build_bi_dataset(self):
+        logger.info(
+            '开始构建 Power bi数据集'
+        )
+        self.bi.build_fact_tables(
+            path.DWD_ORDER_DETAIL,
+            path.BI_FACT_ORDER,
+            path.BI_FACT_ORDER_DETAIL
+        )
+        logger.info(
+            'Power bi 数据集构建完成'
+        )
+
+    def build_bi_dataset(self):
+        logger.info(
+            '开始构建Power bi数据集'
+        )
+        # 1.构建事实表
+        self.bi.build_fact_tables(
+            path.DWD_ORDER_DETAIL,
+            path.BI_FACT_ORDER,
+            path.BI_FACT_ORDER_DETAIL
+        )
+
+        # 2.构建维度表
+        self.bi.build_dimension_tables(
+            path.ODS_CUSTOMER,
+            path.ODS_PRODUCT,
+            path.BI_FACT_ORDER,
+            path.BI_FACT_ORDER_DETAIL,
+            path.BI_DIM_CUSTOMER,
+            path.BI_DIM_PRODUCT,
+            path.BI_DIM_DATE
+        )
+
+        logger.info(
+                "Power BI数据集构建完成"
+            )

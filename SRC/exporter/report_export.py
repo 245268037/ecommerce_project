@@ -46,9 +46,3 @@ class ReportExport:
                         sheet_name="质量汇总",
                         index=False
                     )
-            print(
-                "质量报告生成完成:"
-                f"{output_file}"
-            )
-            print( f"质量报告生成完成:{output_file}")
-

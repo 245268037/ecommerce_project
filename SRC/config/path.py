@@ -179,10 +179,7 @@ DWD_DIR = os.path.join(
 )
 
 
-DWD_ORDER_DETAIL = os.path.join(
-    DWD_DIR,
-    "dwd_order_detail.csv"
-)
+
 
 
 
@@ -193,6 +190,11 @@ DWD_ORDER_DETAIL = os.path.join(
 DWS_DIR = os.path.join(
     WAREHOUSE_DIR,
     "dws"
+)
+
+DWD_ORDER_DETAIL = os.path.join(
+    DWD_DIR,
+    "dwd_order_detail.csv"
 )
 
 
@@ -242,6 +244,20 @@ ADS_PRODUCT_SUMMARY = os.path.join(
     "ads_product_summary.csv"
 )
 
+ADS_USER_RFM_BASE = os.path.join(
+    ADS_DIR,
+    "ads_user_rfm_base.csv"
+)
+
+ADS_USER_RFM_SEGMENT = os.path.join(
+    ADS_DIR,
+    "ads_user_rfm_segment.csv"
+)
+
+ADS_USER_RFM_SEGMENT_SUMMARY = os.path.join(
+    ADS_DIR,
+    "ads_user_rfm_segment_summary.csv"
+)
 
 
 # ==================================================
@@ -327,30 +343,33 @@ for directory in DIR_LIST:
         exist_ok=True
     )
 
+#POWER BI 输出路径
+BI_DIR = os.path.join(
+    WAREHOUSE_DIR,
+    "bi"
+)
 
+BI_FACT_ORDER = os.path.join(
+    BI_DIR,
+    "bi_fact_order.csv"
+)
 
-# ==================================================
-# 测试
-# ==================================================
+BI_FACT_ORDER_DETAIL = os.path.join(
+    BI_DIR,
+    "bi_fact_order_detail.csv"
+)
 
-if __name__ == "__main__":
+BI_DIM_CUSTOMER = os.path.join(
+    BI_DIR,
+    "bi_dim_customer.csv"
+)
 
+BI_DIM_PRODUCT = os.path.join(
+    BI_DIR,
+    "bi_dim_product.csv"
+)
 
-    print("项目根目录:")
-    print(BASE_DIR)
-
-
-    print("\n原始订单:")
-    print(RAW_ORDER)
-
-
-    print("\nODS订单:")
-    print(ODS_ORDER)
-
-
-    print("\nDWD:")
-    print(DWD_ORDER_DETAIL)
-
-
-    print("\n质量历史:")
-    print(QUALITY_HISTORY)
+BI_DIM_DATE = os.path.join(
+    BI_DIR,
+    "bi_dim_date.csv"
+)

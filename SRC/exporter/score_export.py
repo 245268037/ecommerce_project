@@ -54,6 +54,3 @@ class ScoreExport:
                 sheet_name="规则评分明细",
                 index=False
             )
-        print(
-            f"质量评分报告生成完成:{output_file}"
-        )

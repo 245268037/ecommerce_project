@@ -67,3 +67,10 @@ TECH_COLUMNS=[
 #客户登记区分
 VIP_AMOUNT=10000
 IMPORTANT_AMOUNT=5000
+
+#
+VALID_SALES_STATUSES = (
+    "已支付",
+    "已发货",
+    "已完成"
+)

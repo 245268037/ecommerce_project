@@ -72,7 +72,3 @@ class HistoryWriter:
             index=False,
             encoding="utf-8-sig"
         )
-
-        print(
-            f"质量历史保存完成:{output_file}"
-        )

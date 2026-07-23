@@ -128,9 +128,7 @@ class DataCleaner:
             input_file,
             schema
         )
-        print(
-            f"读取完成:{input_file}"
-        )
+
 
         # 2.去重
 
@@ -159,7 +157,5 @@ class DataCleaner:
             index=False,
             encoding="utf-8-sig"
         )
-        print(
-            f"清洗完成:{output_file}"
-        )
+
         return df
