@@ -1,0 +1,18 @@
+# 默认识别文本文件并统一存储为LF
+* text=auto
+
+# 项目代码和配置统一使用LF
+*.py text eol=lf
+*.sh text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+
+# 二进制文件不进行换行转换
+*.xlsx binary
+*.xls binary
+*.pbix binary
+*.png binary
+*.jpg binary
+*.jpeg binary
