@@ -1,4 +1,4 @@
-```
+
 # 电商数据仓库与经营分析项目
 
 基于 Python、Pandas、Linux Shell 和 Power BI 构建的电商离线数据仓库项目。
