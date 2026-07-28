@@ -425,6 +425,7 @@ def save_and_check(dws_product_df):
 
     (
         dws_product_df
+        .coalesce(1)
         .write
         .mode("overwrite")
         .parquet(
@@ -443,7 +444,6 @@ def save_and_check(dws_product_df):
     after_save_count = (
         saved_df.count()
     )
-
     print("\n========== 保存结果检查 ==========")
     print(f"保存前商品数：{before_save_count}")
     print(f"保存后商品数：{after_save_count}")

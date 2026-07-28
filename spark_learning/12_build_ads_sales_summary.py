@@ -473,6 +473,7 @@ def save_and_check(ads_sales_df):
 
     (
         ads_sales_df
+        .coalesce(1)
         .write
         .mode("overwrite")
         .parquet(
@@ -491,7 +492,6 @@ def save_and_check(ads_sales_df):
     after_save_count = (
         saved_df.count()
     )
-
     print("\n========== ADS保存检查 ==========")
     print(f"保存前日期数：{before_save_count}")
     print(f"保存后日期数：{after_save_count}")

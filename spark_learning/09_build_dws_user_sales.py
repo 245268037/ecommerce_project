@@ -362,6 +362,7 @@ def save_and_check(dws_user_df):
 
     (
         dws_user_df
+        .coalesce(1)
         .write
         .mode("overwrite")
         .parquet(
@@ -380,7 +381,6 @@ def save_and_check(dws_user_df):
     after_save_count = (
         saved_df.count()
     )
-
     print("\n========== DWS保存检查 ==========")
     print(f"保存前用户数：{before_save_count}")
     print(f"保存后用户数：{after_save_count}")
