@@ -40,3 +40,9 @@ Thumbs.db
 *.tmp
 *.bak
 *~
+
+# Spark生成的数据
+warehouse_spark/
+
+# Spark运行文件
+.spark_warehouse.lock
